@@ -754,7 +754,7 @@
           </div>
         </div>
         <div class="thumb-title">${story.title}</div>`;
-	item.addEventListener('click', () => { console.log(999); openPDF(story) });
+	item.addEventListener('click', () => { openPDF(story) });
       scroller.appendChild(item);
 
       // --- mobile grid item ---
@@ -914,7 +914,7 @@
 
       // Background click — but not on thumbnails, buttons, or PDF overlay
       document.getElementById('thumbTrack').addEventListener('click', e => {
-        if (!e.target.closest('.thumb-item')) fadeOutAndPause();
+        fadeOutAndPause(); // $$$
       });
       document.querySelector('.scene').addEventListener('click', e => {
         const ignore = e.target.closest('.thumb-item, #storiesBtn, #startOverlay, #pdfOverlay');
