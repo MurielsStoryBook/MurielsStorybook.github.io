@@ -732,7 +732,7 @@
   function openPDF(story) {
     pdfTitle.textContent = story.title;
     pdfFrame.src = story.pdf;
-    pdfOverlay.classList.add('open');
+      pdfOverlay.classList.add('open');
   }
 
   // ===== BUILD THUMBNAILS =====
@@ -754,7 +754,7 @@
           </div>
         </div>
         <div class="thumb-title">${story.title}</div>`;
-      item.addEventListener('click', () => openPDF(story));
+	item.addEventListener('click', () => { console.log(999); openPDF(story) });
       scroller.appendChild(item);
 
       // --- mobile grid item ---
@@ -797,7 +797,7 @@
       isDragging = true;
       startX = e.clientX;
       startOffset = offset;
-      scroller.setPointerCapture(e.pointerId);
+//$$$      scroller.setPointerCapture(e.pointerId);
     });
     scroller.addEventListener('pointermove', e => {
       if (!isDragging) return;
