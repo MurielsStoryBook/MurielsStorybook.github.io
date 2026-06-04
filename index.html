@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Muriel&rsquo;s Storybook</title>
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">
+
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -106,6 +103,7 @@
     background: rgba(255,255,255,0.25);
     animation: shimmerAnim ease-in-out infinite alternate;
     pointer-events: none;
+    z-index: 1;
   }
   @keyframes shimmerAnim {
     from { opacity: 0.15; transform: scaleX(0.8); }
@@ -117,6 +115,7 @@
     position: absolute;
     left: -220px;
     transform-origin: center bottom;
+    z-index: 5;
   }
 
   /* triggered by JS after overlay click */
@@ -254,7 +253,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 42%;          /* sits in the lower sea area */
+    height: 55%;          /* sits in the lower sea area */
     overflow: hidden;
     pointer-events: none; /* enabled after yacht settles */
     z-index: 10;
@@ -263,14 +262,16 @@
     position: absolute;
     bottom: 0;
     left: 0;
+    width: 100%;
     height: 100%;
     display: flex;
     align-items: flex-end;
-    padding: 0 12vw 3% 12vw;  /* leave space either side so yacht isn't obscured */
+    justify-content: center;
+    padding: 0 6vw 2% 6vw;
     gap: clamp(24px, 4vw, 60px);
     cursor: grab;
     user-select: none;
-    /* no overflow-x here — we move it with JS translate */
+    box-sizing: border-box;
   }
   #thumbScroller:active { cursor: grabbing; }
 
@@ -302,7 +303,8 @@
   }
   .thumb-item img {
     display: block;
-    width: clamp(70px, 9vw, 130px);
+/*    width: clamp(110px, 14vw, 200px); */
+    width: clamp(140px, 18vw, 260px);
     height: auto;
     border-radius: 4px;
     border: 2px solid rgba(255,255,255,0.6);
@@ -310,10 +312,11 @@
   .thumb-item .thumb-title {
     margin-top: 6px;
     color: rgba(255,255,255,0.85);
-    font-size: clamp(0.55rem, 1vw, 0.8rem);
+/*    font-size: clamp(0.55rem, 1vw, 0.8rem); */
+    font-size: clamp(0.75rem, 1.3vw, 1.1rem);
     text-align: center;
     text-shadow: 0 1px 4px rgba(0,0,0,0.7);
-    max-width: clamp(75px, 9.5vw, 140px);
+    max-width: clamp(115px, 14.5vw, 210px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -499,7 +502,7 @@
   <!-- CLICK TO START OVERLAY -->
   <div id="startOverlay">
     <div class="anchor-icon">⚓</div>
-    <p style ='margin-bottom: 20px'>Turn sound on!</p>
+    <p style='margin-bottom: 20px'>Turn sound on</p>
     <p>Click to set sail</p>
   </div>
 
@@ -516,7 +519,7 @@
   <!-- TITLE -->
   <div class="title">
     <h1>Muriel&rsquo;s Storybook</h1>
-    <p>set sail &amp; explore</p>
+    <p>Set sail &amp; explore</p>
   </div>
 
   <!-- SEA SVG (wave + deep water) -->
@@ -566,7 +569,7 @@
   <!-- PDF OVERLAY -->
   <div id="pdfOverlay">
     <div id="pdfTopBar">
-      <button id="pdfBackBtn">⛵ Back to shore</button>
+      <button id="pdfBackBtn">⛵ Back to sea</button>
       <span id="pdfTitle"></span>
     </div>
     <iframe id="pdfFrame" title="Story"></iframe>
@@ -583,7 +586,7 @@
     // matches the CSS wave shape: two full sine cycles across screen width
     const W = window.innerWidth;
     const amp = 30; // px amplitude
-    const base = window.innerHeight * 0.48; // wave sits at ~48% down
+    const base = window.innerHeight * 0.35; // wave sits at ~35% down
     return base + amp * Math.sin((x / W) * Math.PI * 2 + t);
   }
 
@@ -623,13 +626,13 @@
     for (let i = 0; i <= steps; i++) {
       const x = (i / steps) * W;
       const amp = 28;
-      const base = H * 0.48;
+      const base = H * 0.35;
       const y = base + amp * Math.sin((i / steps) * Math.PI * 2 + phase);
       wavePoints += `${i === 0 ? 'M' : 'L'}${x},${y} `;
       gleamPoints += `${i === 0 ? 'M' : 'L'}${x},${y} `;
     }
     const waveFill = wavePoints + `L${W},${H} L0,${H} Z`;
-    const gleamFill = gleamPoints + `L${W},${H*0.48+28} L${W},${H*0.42} Z`;
+    const gleamFill = gleamPoints + `L${W},${H*0.35+28} L${W},${H*0.29} Z`;
 
     const wp = seaSvg.querySelector('.wavePath');
     const gp = seaSvg.querySelector('.gleamPath');
@@ -638,7 +641,7 @@
 
     // Position yacht on the wave at ~50% x
     const yachtX = W * 0.5 - 70; // centre (matches CSS animation endpoint)
-    const yachtWaveY = H * 0.48 + 28 * Math.sin(Math.PI + phase) - 30; // -30 = hull offset
+    const yachtWaveY = H * 0.35 + 28 * Math.sin(Math.PI + phase) - 30; // -30 = hull offset
     yacht.style.top = yachtWaveY + 'px';
   }
 
@@ -648,7 +651,7 @@
     old.forEach(e => e.remove());
     const H = window.innerHeight;
     const W = window.innerWidth;
-    const seaTop = H * 0.44;
+    const seaTop = H * 0.31;
     for (let i = 0; i < 12; i++) {
       const s = document.createElement('div');
       s.className = 'shimmer';
@@ -724,15 +727,13 @@
   const pdfOverlay = document.getElementById('pdfOverlay');
   const pdfFrame   = document.getElementById('pdfFrame');
   const pdfTitle   = document.getElementById('pdfTitle');
-  document.getElementById('pdfBackBtn').addEventListener('click', () => {
-    pdfOverlay.classList.remove('open');
-    pdfFrame.src = '';
-  });
+  // Note: pdfBackBtn click is handled further down inside startEverything()
+  // so that it also has access to the audio object and fadeInAndResume().
 
   function openPDF(story) {
     pdfTitle.textContent = story.title;
     pdfFrame.src = story.pdf;
-      pdfOverlay.classList.add('open');
+    pdfOverlay.classList.add('open');
   }
 
   // ===== BUILD THUMBNAILS =====
@@ -750,11 +751,11 @@
       item.innerHTML = `
         <div class="thumb-img-wrap">
           <div class="thumb-bob" style="animation-delay:${(i * 0.4).toFixed(1)}s">
-            <img src="${story.thumbnail}" alt="${story.title}" onerror="this.style.background='#1a6fa8';this.style.width=this.style.width||'90px';this.style.height='120px'">
+            <img src="${story.thumbnail}" alt="${story.title}" onerror="this.style.background='#1a6fa8';this.style.width=this.style.width||'140px';this.style.height='185px'">
           </div>
         </div>
         <div class="thumb-title">${story.title}</div>`;
-	item.addEventListener('click', () => { openPDF(story) });
+      item.addEventListener('click', () => openPDF(story));
       scroller.appendChild(item);
 
       // --- mobile grid item ---
@@ -781,26 +782,55 @@
     const hintR    = document.getElementById('hintRight');
     let offset = 0;
     let isDragging = false, startX = 0, startOffset = 0;
+    let scrollable = false;
+
+    function checkOverflow() {
+      // Reset to full-width centred mode first so we can measure accurately
+      scroller.style.width = '100%';
+      scroller.style.justifyContent = 'center';
+      scroller.style.transform = 'translateX(0)';
+      offset = 0;
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const items = Array.from(scroller.querySelectorAll('.thumb-item'));
+        if (!items.length) return;
+        const gap = parseFloat(getComputedStyle(scroller).gap) || 0;
+        const padding = parseFloat(getComputedStyle(scroller).paddingLeft) * 2 || 0;
+        const contentWidth = items.reduce((sum, el) => sum + el.offsetWidth, 0)
+                           + gap * Math.max(0, items.length - 1)
+                           + padding;
+        const trackWidth = track.clientWidth;
+        scrollable = contentWidth > trackWidth;
+        if (scrollable) {
+          // Switch to scrollable mode: shrink to content, align left, enable drag
+          scroller.style.width = 'max-content';
+          scroller.style.justifyContent = 'flex-start';
+        }
+        // else: stays full-width, centred — nothing more to do
+        applyOffset();
+      }));
+    }
 
     function clampOffset() {
       const maxScroll = Math.max(0, scroller.scrollWidth - track.clientWidth);
       offset = Math.max(-maxScroll, Math.min(0, offset));
     }
     function applyOffset() {
+      if (!scrollable) return;
       scroller.style.transform = `translateX(${offset}px)`;
       hintL.classList.toggle('show', offset < -10);
       hintR.classList.toggle('show', offset > -(scroller.scrollWidth - track.clientWidth) + 10);
     }
 
-    // drag
+    // drag — only when content overflows
     scroller.addEventListener('pointerdown', e => {
+      if (!scrollable) return;
       isDragging = true;
       startX = e.clientX;
       startOffset = offset;
-//$$$      scroller.setPointerCapture(e.pointerId);
     });
     scroller.addEventListener('pointermove', e => {
-      if (!isDragging) return;
+      if (!isDragging || !scrollable) return;
       offset = startOffset + (e.clientX - startX);
       clampOffset(); applyOffset();
     });
@@ -808,6 +838,7 @@
 
     // wheel
     track.addEventListener('wheel', e => {
+      if (!scrollable) return;
       e.preventDefault();
       offset -= e.deltaY * 0.8;
       clampOffset(); applyOffset();
@@ -815,15 +846,18 @@
 
     // hint arrows
     hintL.addEventListener('click', () => {
+      if (!scrollable) return;
       offset += track.clientWidth * 0.6;
       clampOffset(); applyOffset();
     });
     hintR.addEventListener('click', () => {
+      if (!scrollable) return;
       offset -= track.clientWidth * 0.6;
       clampOffset(); applyOffset();
     });
 
-    applyOffset();
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
   }
 
   // stagger-reveal thumbnails
@@ -876,20 +910,94 @@
       }, 5200);
 
       // Start music
+      // ── Try to load music.mp3 first; fall back to synthesised tune ──
       const audio = document.createElement('audio');
-      audio.src = 'music.mp3';
       audio.loop = true;
       audio.volume = 0;
-      audio.play().then(() => {
+
+      function fadeAudioIn() {
         let vol = 0;
-        const fadeIn = setInterval(() => {
+        const fi = setInterval(() => {
           vol = Math.min(vol + 0.02, 0.7);
           audio.volume = vol;
-          if (vol >= 0.7) clearInterval(fadeIn);
+          if (vol >= 0.7) clearInterval(fi);
         }, 60);
-      }).catch(err => console.warn('Audio play failed:', err));
+      }
 
-      // ── Stop / resume music on background click or Escape ──
+      function startSynthMusic() {
+        // Synthesised sea-shanty fallback (Web Audio API)
+        console.info('music.mp3 not found – using synthesised fallback');
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const MELODY = [
+          62,62,66, 69,69,67, 66,64,62, 64,0,0,
+          62,66,69, 74,0,69,  67,66,64, 62,0,0,
+          69,69,71, 73,71,69, 67,66,64, 66,0,0,
+          62,66,69, 66,64,62, 64,62,61, 62,0,0
+        ];
+        const BASS = [
+          62,69,69, 69,0,69,  67,66,64, 62,0,0,
+          62,66,69, 69,0,62,  67,66,64, 62,0,0,
+          69,69,71, 69,71,69, 67,66,64, 66,0,0,
+          62,66,69, 66,64,62, 64,62,61, 62,0,0
+        ];
+        const BD = 0.28;
+        function hz(m){ return 440*Math.pow(2,(m-69)/12); }
+        function note(freq,t,dur,vol,type){
+          if(!freq) return;
+          const o=ctx.createOscillator(), g=ctx.createGain();
+          o.type=type||'sine'; o.frequency.setValueAtTime(freq,t);
+          g.gain.setValueAtTime(0,t);
+          g.gain.linearRampToValueAtTime(vol,t+0.03);
+          g.gain.setValueAtTime(vol,t+dur*0.6);
+          g.gain.linearRampToValueAtTime(0,t+dur*0.95);
+          o.connect(g); g.connect(ctx.destination);
+          o.start(t); o.stop(t+dur);
+        }
+        // master gain proxy so fade functions work on ctx.destination-like object
+        const masterGain = ctx.createGain();
+        masterGain.gain.value = 0;
+        masterGain.connect(ctx.destination);
+        // patch audio object so fadeOutAndPause / fadeInAndResume still work
+        Object.defineProperty(audio,'volume',{
+          get(){ return masterGain.gain.value; },
+          set(v){ masterGain.gain.value = Math.max(0,Math.min(1,v)); }
+        });
+        Object.defineProperty(audio,'paused',{ get(){ return ctx.state==='suspended'; } });
+        audio.pause = () => ctx.suspend();
+        audio.play  = () => ctx.resume();
+
+        function scheduleLoop(start){
+          const N=MELODY.length;
+          for(let i=0;i<N;i++){
+            const t=start+i*BD, d=BD*0.9;
+            if(MELODY[i]) { note(hz(MELODY[i]),t,d,0.18,'sine'); note(hz(MELODY[i]+12),t,d*0.7,0.06,'sine'); }
+            if(BASS[i])   note(hz(BASS[i]-12),t,d,0.12,'triangle');
+          }
+          return start+N*BD;
+        }
+        let nextStart = ctx.currentTime+0.1;
+        const loopLen = MELODY.length*BD;
+        function scheduleNext(){ nextStart=scheduleLoop(nextStart); setTimeout(scheduleNext,(loopLen-0.5)*1000); }
+        scheduleNext();
+        fadeAudioIn();
+      }
+
+      // Try real file first
+      audio.src = 'music.mp3';
+      audio.addEventListener('canplaythrough', () => {
+        console.info('music.mp3 loaded OK');
+        audio.play().then(fadeAudioIn).catch(err => {
+          console.warn('audio.play() rejected:', err);
+          startSynthMusic();
+        });
+      }, { once: true });
+      audio.addEventListener('error', () => startSynthMusic(), { once: true });
+      // Give the browser 1.5s to find the file, then fall back
+      const synthFallbackTimer = setTimeout(startSynthMusic, 1500);
+      audio.addEventListener('canplaythrough', () => clearTimeout(synthFallbackTimer), { once: true });
+      audio.load();
+
+      // ── Music pause / resume controls ──
       let musicPaused = false;
 
       function fadeOutAndPause() {
@@ -912,19 +1020,23 @@
         }).catch(err => console.warn('Audio resume failed:', err));
       }
 
-      // Background click — but not on thumbnails, buttons, or PDF overlay
-      document.getElementById('thumbTrack').addEventListener('click', e => {
-        fadeOutAndPause(); // $$$
-      });
-      document.querySelector('.scene').addEventListener('click', e => {
-        const ignore = e.target.closest('.thumb-item, #storiesBtn, #startOverlay, #pdfOverlay');
-        if (!ignore) fadeOutAndPause();
+      // ANY click anywhere on the page stops the music —
+      // but wait 1s after startup so the overlay click doesn't immediately stop it
+      setTimeout(() => {
+        document.addEventListener('click', () => fadeOutAndPause());
+      }, 1000);
+
+      // 'Back to shore' button resumes music as well as closing PDF
+      document.getElementById('pdfBackBtn').addEventListener('click', () => {
+        pdfOverlay.classList.remove('open');
+        pdfFrame.src = '';
+        fadeInAndResume();
       });
 
-      // Escape key — toggle pause/resume
+      // Escape key — toggle pause/resume (when PDF is not open)
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
-          if (pdfOverlay.classList.contains('open')) return; // let PDF handle it
+          if (pdfOverlay.classList.contains('open')) return; // PDF handles Escape separately
           musicPaused ? fadeInAndResume() : fadeOutAndPause();
         }
       });
