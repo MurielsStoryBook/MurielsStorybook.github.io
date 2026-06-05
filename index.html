@@ -358,83 +358,7 @@
   #hintLeft  { left:  10px; }
   #hintRight { right: 10px; }
 
-  /* ===== MOBILE STORIES BUTTON ===== */
-  #storiesBtn {
-    display: none;
-    position: fixed;
-    bottom: 18px;
-    right: 18px;
-    z-index: 50;
-    background: rgba(20,70,120,0.85);
-    color: white;
-    border: 1.5px solid rgba(255,255,255,0.35);
-    border-radius: 30px;
-    padding: 10px 18px;
-    font-size: 1rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    transition: background 0.2s;
-  }
-  #storiesBtn:active { background: rgba(20,70,120,1); }
-
-  /* ===== MOBILE STORIES PANEL ===== */
-  #storiesPanel {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    z-index: 200;
-    background: linear-gradient(180deg, rgba(10,45,90,0.97) 0%, rgba(6,29,56,0.99) 100%);
-    border-radius: 18px 18px 0 0;
-    padding: 18px 16px 32px;
-    transform: translateY(100%);
-    transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
-    max-height: 70vh;
-    overflow-y: auto;
-  }
-  #storiesPanel.open { transform: translateY(0); }
-  #storiesPanel h2 {
-    color: #cde8f8;
-    font-size: 1rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    text-align: center;
-    margin-bottom: 16px;
-    font-weight: 400;
-  }
-  #storiesPanel .panel-close {
-    position: absolute;
-    top: 14px; right: 16px;
-    background: none; border: none;
-    color: rgba(255,255,255,0.6);
-    font-size: 1.4rem;
-    cursor: pointer;
-  }
-  #mobileThumbGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-  #mobileThumbGrid .m-thumb {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-  }
-  #mobileThumbGrid .m-thumb img {
-    width: 100%;
-    border-radius: 4px;
-    border: 1.5px solid rgba(255,255,255,0.4);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  }
-  #mobileThumbGrid .m-thumb span {
-    margin-top: 5px;
-    color: rgba(255,255,255,0.8);
-    font-size: 0.65rem;
-    text-align: center;
-    letter-spacing: 0.04em;
-  }
+  /* Stories button and panel removed — mobile uses same scrollable track as desktop */
 
   /* ===== PDF OVERLAY ===== */
   #pdfOverlay {
@@ -485,13 +409,42 @@
     border: none;
     width: 100%;
     background: #fff;
+    display: block;
+  }
+  #pdfFallback {
+    display: none;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    background: #f0f4f8;
+    padding: 40px;
+    text-align: center;
+  }
+  #pdfFallback p {
+    color: #1a4f7a;
+    font-size: 1rem;
+    font-family: Georgia, serif;
+  }
+  #pdfOpenLink {
+    display: inline-block;
+    padding: 12px 28px;
+    background: #1a6fa8;
+    color: white;
+    border-radius: 24px;
+    font-size: 1rem;
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    box-shadow: 0 4px 14px rgba(0,0,80,0.25);
   }
 
-  /* ===== RESPONSIVE BREAKPOINT ===== */
+  /* ===== RESPONSIVE: thumb track always visible, touch-scrollable on mobile ===== */
   @media (max-width: 640px) {
-    #thumbTrack { display: none; }
-    #storiesBtn { display: block; }
-    #storiesPanel { display: block; }
+    #thumbScroller {
+      cursor: default; /* no grab cursor on touch */
+      padding: 0 4vw 3% 4vw;
+    }
   }
 
 </style>
@@ -558,21 +511,20 @@
     <div id="thumbScroller"></div>
   </div>
 
-  <!-- MOBILE STORIES BUTTON + PANEL -->
-  <button id="storiesBtn">📚 Stories</button>
-  <div id="storiesPanel">
-    <button class="panel-close" id="panelClose">&#10005;</button>
-    <h2>Stories</h2>
-    <div id="mobileThumbGrid"></div>
-  </div>
-
   <!-- PDF OVERLAY -->
   <div id="pdfOverlay">
     <div id="pdfTopBar">
       <button id="pdfBackBtn">⛵ Back to sea</button>
       <span id="pdfTitle"></span>
     </div>
-    <iframe id="pdfFrame" title="Story"></iframe>
+    <!-- object works better than iframe on iOS Safari -->
+    <object id="pdfFrame" type="application/pdf" title="Story">
+    </object>
+    <!-- Fallback for iOS Safari which can't embed PDFs inline -->
+    <div id="pdfFallback">
+      <p>Your browser cannot display this PDF inline.</p>
+      <a id="pdfOpenLink" href="#" target="_blank">Open story ↗</a>
+    </div>
   </div>
 
 </div>
@@ -732,19 +684,31 @@
 
   function openPDF(story) {
     pdfTitle.textContent = story.title;
-    pdfFrame.src = story.pdf;
+    const fallback = document.getElementById('pdfFallback');
+    const openLink = document.getElementById('pdfOpenLink');
+    // Detect iOS Safari — it can't render PDFs in <object> tags
+    const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+      // On iOS: hide object, show fallback with open-in-new-tab link
+      pdfFrame.style.display = 'none';
+      fallback.style.display = 'flex';
+      openLink.href = story.pdf;
+      openLink.textContent = 'Open "' + story.title + '" ↗';
+    } else {
+      pdfFrame.style.display = 'block';
+      fallback.style.display = 'none';
+      pdfFrame.data = story.pdf;
+    }
     pdfOverlay.classList.add('open');
   }
 
   // ===== BUILD THUMBNAILS =====
   function buildThumbnails() {
-    const scroller   = document.getElementById('thumbScroller');
-    const mobileGrid = document.getElementById('mobileThumbGrid');
+    const scroller = document.getElementById('thumbScroller');
     scroller.innerHTML = '';
-    mobileGrid.innerHTML = '';
 
     STORIES.forEach((story, i) => {
-      // --- desktop floating item ---
       const item = document.createElement('div');
       item.className = 'thumb-item';
       item.style.animationDelay = (i * 0.15) + 's';
@@ -757,18 +721,6 @@
         <div class="thumb-title">${story.title}</div>`;
       item.addEventListener('click', () => openPDF(story));
       scroller.appendChild(item);
-
-      // --- mobile grid item ---
-      const mItem = document.createElement('div');
-      mItem.className = 'm-thumb';
-      mItem.innerHTML = `
-        <img src="${story.thumbnail}" alt="${story.title}">
-        <span>${story.title}</span>`;
-      mItem.addEventListener('click', () => {
-        closeMobilePanel();
-        openPDF(story);
-      });
-      mobileGrid.appendChild(mItem);
     });
 
     setupThumbScroll();
@@ -866,22 +818,7 @@
     document.querySelectorAll('.thumb-item').forEach((el, i) => {
       setTimeout(() => el.classList.add('visible'), i * 160);
     });
-    // show mobile button
-    const btn = document.getElementById('storiesBtn');
-    btn.style.display = '';
-    btn.style.opacity = '0';
-    btn.style.transition = 'opacity 0.6s';
-    setTimeout(() => btn.style.opacity = '1', 100);
   }
-
-  // ===== MOBILE PANEL =====
-  document.getElementById('storiesBtn').addEventListener('click', () => {
-    document.getElementById('storiesPanel').classList.add('open');
-  });
-  function closeMobilePanel() {
-    document.getElementById('storiesPanel').classList.remove('open');
-  }
-  document.getElementById('panelClose').addEventListener('click', closeMobilePanel);
 
   // ===== MUSIC + OVERLAY + YACHT TRIGGER =====
   (function() {
@@ -1029,7 +966,7 @@
       // 'Back to shore' button resumes music as well as closing PDF
       document.getElementById('pdfBackBtn').addEventListener('click', () => {
         pdfOverlay.classList.remove('open');
-        pdfFrame.src = '';
+        pdfFrame.data = '';
         fadeInAndResume();
       });
 
