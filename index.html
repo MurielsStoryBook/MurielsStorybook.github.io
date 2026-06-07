@@ -272,6 +272,8 @@
     cursor: grab;
     user-select: none;
     box-sizing: border-box;
+    background: red;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
   #thumbScroller:active { cursor: grabbing; }
 
@@ -358,87 +360,6 @@
   #hintLeft  { left:  10px; }
   #hintRight { right: 10px; }
 
-  /* Stories button and panel removed — mobile uses same scrollable track as desktop */
-
-  /* ===== PDF OVERLAY ===== */
-  #pdfOverlay {
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    background: #1a2a3a;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.4s ease;
-  }
-  #pdfOverlay.open {
-    opacity: 1;
-    pointer-events: all;
-  }
-  #pdfTopBar {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 16px;
-    background: rgba(6,29,56,0.95);
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    flex-shrink: 0;
-  }
-  #pdfBackBtn {
-    background: none;
-    border: 1.5px solid rgba(255,255,255,0.35);
-    color: #cde8f8;
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 0.85rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
-    transition: background 0.2s;
-  }
-  #pdfBackBtn:hover { background: rgba(255,255,255,0.1); }
-  #pdfTitle {
-    color: #cde8f8;
-    font-size: 0.95rem;
-    letter-spacing: 0.1em;
-    font-family: Georgia, serif;
-  }
-  #pdfFrame {
-    flex: 1;
-    border: none;
-    width: 100%;
-    background: #fff;
-    display: block;
-  }
-  #pdfFallback {
-    display: none;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    background: #f0f4f8;
-    padding: 40px;
-    text-align: center;
-  }
-  #pdfFallback p {
-    color: #1a4f7a;
-    font-size: 1rem;
-    font-family: Georgia, serif;
-  }
-  #pdfOpenLink {
-    display: inline-block;
-    padding: 12px 28px;
-    background: #1a6fa8;
-    color: white;
-    border-radius: 24px;
-    font-size: 1rem;
-    text-decoration: none;
-    letter-spacing: 0.08em;
-    box-shadow: 0 4px 14px rgba(0,0,80,0.25);
-  }
-
   /* ===== RESPONSIVE: thumb track always visible, touch-scrollable on mobile ===== */
   @media (max-width: 640px) {
     #thumbScroller {
@@ -510,23 +431,6 @@
     <div id="hintRight" class="scroll-hint">&#8250;</div>
     <div id="thumbScroller"></div>
   </div>
-
-  <!-- PDF OVERLAY -->
-  <div id="pdfOverlay">
-    <div id="pdfTopBar">
-      <button id="pdfBackBtn">⛵ Back to sea</button>
-      <span id="pdfTitle"></span>
-    </div>
-    <!-- object works better than iframe on iOS Safari -->
-    <object id="pdfFrame" type="application/pdf" title="Story">
-    </object>
-    <!-- Fallback for iOS Safari which can't embed PDFs inline -->
-    <div id="pdfFallback">
-      <p>Your browser cannot display this PDF inline.</p>
-      <a id="pdfOpenLink" href="#" target="_blank">Open story ↗</a>
-    </div>
-  </div>
-
 </div>
 
 <script>
@@ -675,32 +579,9 @@
 //    { title: 'Story Five',  thumbnail: 'thumb5.jpg', pdf: 'story5.pdf' },
   ];
 
-  // ===== PDF VIEWER =====
-  const pdfOverlay = document.getElementById('pdfOverlay');
-  const pdfFrame   = document.getElementById('pdfFrame');
-  const pdfTitle   = document.getElementById('pdfTitle');
-  // Note: pdfBackBtn click is handled further down inside startEverything()
-  // so that it also has access to the audio object and fadeInAndResume().
 
   function openPDF(story) {
-    pdfTitle.textContent = story.title;
-    const fallback = document.getElementById('pdfFallback');
-    const openLink = document.getElementById('pdfOpenLink');
-    // Detect iOS Safari — it can't render PDFs in <object> tags
-    const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (isIOS) {
-      // On iOS: hide object, show fallback with open-in-new-tab link
-      pdfFrame.style.display = 'none';
-      fallback.style.display = 'flex';
-      openLink.href = story.pdf;
-      openLink.textContent = 'Open "' + story.title + '" ↗';
-    } else {
-      pdfFrame.style.display = 'block';
-      fallback.style.display = 'none';
-      pdfFrame.data = story.pdf;
-    }
-    pdfOverlay.classList.add('open');
+      window.open(story.pdf, '_blank')
   }
 
   // ===== BUILD THUMBNAILS =====
@@ -862,61 +743,7 @@
       }
 
       function startSynthMusic() {
-        // Synthesised sea-shanty fallback (Web Audio API)
-        console.info('music.mp3 not found – using synthesised fallback');
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const MELODY = [
-          62,62,66, 69,69,67, 66,64,62, 64,0,0,
-          62,66,69, 74,0,69,  67,66,64, 62,0,0,
-          69,69,71, 73,71,69, 67,66,64, 66,0,0,
-          62,66,69, 66,64,62, 64,62,61, 62,0,0
-        ];
-        const BASS = [
-          62,69,69, 69,0,69,  67,66,64, 62,0,0,
-          62,66,69, 69,0,62,  67,66,64, 62,0,0,
-          69,69,71, 69,71,69, 67,66,64, 66,0,0,
-          62,66,69, 66,64,62, 64,62,61, 62,0,0
-        ];
-        const BD = 0.28;
-        function hz(m){ return 440*Math.pow(2,(m-69)/12); }
-        function note(freq,t,dur,vol,type){
-          if(!freq) return;
-          const o=ctx.createOscillator(), g=ctx.createGain();
-          o.type=type||'sine'; o.frequency.setValueAtTime(freq,t);
-          g.gain.setValueAtTime(0,t);
-          g.gain.linearRampToValueAtTime(vol,t+0.03);
-          g.gain.setValueAtTime(vol,t+dur*0.6);
-          g.gain.linearRampToValueAtTime(0,t+dur*0.95);
-          o.connect(g); g.connect(ctx.destination);
-          o.start(t); o.stop(t+dur);
-        }
-        // master gain proxy so fade functions work on ctx.destination-like object
-        const masterGain = ctx.createGain();
-        masterGain.gain.value = 0;
-        masterGain.connect(ctx.destination);
-        // patch audio object so fadeOutAndPause / fadeInAndResume still work
-        Object.defineProperty(audio,'volume',{
-          get(){ return masterGain.gain.value; },
-          set(v){ masterGain.gain.value = Math.max(0,Math.min(1,v)); }
-        });
-        Object.defineProperty(audio,'paused',{ get(){ return ctx.state==='suspended'; } });
-        audio.pause = () => ctx.suspend();
-        audio.play  = () => ctx.resume();
-
-        function scheduleLoop(start){
-          const N=MELODY.length;
-          for(let i=0;i<N;i++){
-            const t=start+i*BD, d=BD*0.9;
-            if(MELODY[i]) { note(hz(MELODY[i]),t,d,0.18,'sine'); note(hz(MELODY[i]+12),t,d*0.7,0.06,'sine'); }
-            if(BASS[i])   note(hz(BASS[i]-12),t,d,0.12,'triangle');
-          }
-          return start+N*BD;
-        }
-        let nextStart = ctx.currentTime+0.1;
-        const loopLen = MELODY.length*BD;
-        function scheduleNext(){ nextStart=scheduleLoop(nextStart); setTimeout(scheduleNext,(loopLen-0.5)*1000); }
-        scheduleNext();
-        fadeAudioIn();
+	  // This did play synthesised music at one point, but it didn't sound too good.
       }
 
       // Try real file first
@@ -963,17 +790,9 @@
         document.addEventListener('click', () => fadeOutAndPause());
       }, 1000);
 
-      // 'Back to shore' button resumes music as well as closing PDF
-      document.getElementById('pdfBackBtn').addEventListener('click', () => {
-        pdfOverlay.classList.remove('open');
-        pdfFrame.data = '';
-        fadeInAndResume();
-      });
-
       // Escape key — toggle pause/resume (when PDF is not open)
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
-          if (pdfOverlay.classList.contains('open')) return; // PDF handles Escape separately
           musicPaused ? fadeInAndResume() : fadeOutAndPause();
         }
       });
