@@ -712,6 +712,10 @@
             </div>
             <div class="thumb-title">${story.title}</div>`;
 	  scroller.appendChild(item);
+	  item.addEventListener('click', e => {
+	      e.stopPropagation();
+	      Audio.fadeOutAndPause(false);
+	  });
       });
 
       setupThumbScroll();
@@ -845,6 +849,104 @@
 
 
   /****************************************************************************/
+  class ClassAudio
+  {
+      /************************************************************************/
+      initialise ()
+      {
+	  this.audio = document.createElement('audio');
+	  this.musicPaused = false;
+	  this.audio.src = 'music.mp3';
+	  this.audio.loop = true;
+	  this.audio.volume = 0;
+
+	  let me = this;
+
+	  me.audio.addEventListener('canplaythrough', () => {
+	      me.audio.play().then(() => me.fadeAudioIn()).catch(err => {
+		  console.warn('audio.play() rejected:', err);
+	      });
+	  }, { once: true });
+
+	  me.audio.addEventListener('error', () => {
+	      console.warn('Error loading music.mp3');
+	  }, { once: true });
+      
+	  me.audio.load();
+
+
+	  // ANY click anywhere on the page stops the music —
+	  // but wait 1s after startup so the overlay click doesn't immediately stop it
+	  setTimeout(() => {
+              document.addEventListener('click', () => { me.musicPaused ? me.fadeInAndResume() : me.fadeOutAndPause() });
+	  }, 1000);
+
+
+	  // Escape key — toggle pause/resume (when PDF is not open)
+	  document.addEventListener('keydown', e => {
+              if (e.key === 'Escape') {
+		  me.musicPaused ? me.fadeInAndResume() : me.fadeOutAndPause();
+              }
+	  });
+
+
+	  document.addEventListener("visibilitychange", () => {
+	      if (document.visibilityState === "hidden")
+		  me.fadeOutAndPause(false);
+	      else if (document.visibilityState === "visible")
+	      {
+		  if (!me.musicPaused)
+		      me.fadeInAndResume(true)
+	      }
+	  });
+      }
+      
+
+      /************************************************************************/
+      fadeAudioIn ()
+      {
+	  let me = this;
+          let vol = 0;
+          const fi = setInterval(() => {
+	      vol = Math.min(vol + 0.02, 0.7);
+	      me.audio.volume = vol;
+	      if (vol >= 0.7) clearInterval(fi);
+          }, 60);
+      }
+
+	
+      /************************************************************************/
+      fadeOutAndPause (updatePausedValue = true)
+      {
+	  let me = this;
+          if (me.musicPaused || me.audio.paused) return;
+          const fadeOut = setInterval(() => {
+	      me.audio.volume = Math.max(0, me.audio.volume - 0.04);
+	      if (me.audio.volume <= 0) { clearInterval(fadeOut); me.audio.pause(); if (updatePausedValue) me.musicPaused = true; }
+          }, 40);
+      }
+
+	   
+      /************************************************************************/
+      fadeInAndResume (force = false)
+      {
+	  let me = this;
+          if (!me.musicPaused && !force) return;
+          me.audio.volume = 0;
+          me.audio.play().then(() => {
+	      me.musicPaused = false;
+	      const fadeIn = setInterval(() => {
+		  me.audio.volume = Math.min(me.audio.volume + 0.02, 0.7);
+		  if (me.audio.volume >= 0.7) clearInterval(fadeIn);
+	      }, 60);
+          }).catch(err => console.warn('Audio resume failed:', err));
+      }
+  }
+
+  const Audio = new ClassAudio();
+
+
+  /****************************************************************************/
   // ===== MUSIC + OVERLAY + YACHT TRIGGER =====
   (function ()
    {
@@ -873,90 +975,7 @@
                revealThumbnails();
 	   }, 5200);
 
-
-
-	   // Start music
-	   const audio = document.createElement('audio');
-	   audio.loop = true;
-	   audio.volume = 0;
-
-	   function fadeAudioIn ()
-	   {
-               let vol = 0;
-               const fi = setInterval(() => {
-		   vol = Math.min(vol + 0.02, 0.7);
-		   audio.volume = vol;
-		   if (vol >= 0.7) clearInterval(fi);
-               }, 60);
-	   }
-
-
-	   audio.src = 'music.mp3';
-	
-	   audio.addEventListener('canplaythrough', () => {
-	       audio.play().then(fadeAudioIn).catch(err => {
-		   console.warn('audio.play() rejected:', err);
-	       });
-	   }, { once: true });
-
-	   audio.addEventListener('error', () => {
-	       console.warn('Error loading music.mp3');
-	   }, { once: true });
-
-	   audio.load();
-
-
-
-	   // ── Music pause / resume controls ──
-	   let musicPaused = false;
-	   
-	   function fadeOutAndPause ()
-	   {
-               if (musicPaused || audio.paused) return;
-               const fadeOut = setInterval(() => {
-		   audio.volume = Math.max(0, audio.volume - 0.04);
-		   if (audio.volume <= 0) { clearInterval(fadeOut); audio.pause(); musicPaused = true; }
-               }, 40);
-	   }
-
-	   
-
-	   function fadeInAndResume ()
-	   {
-               if (!musicPaused) return;
-               audio.volume = 0;
-               audio.play().then(() => {
-		   musicPaused = false;
-		   const fadeIn = setInterval(() => {
-		       audio.volume = Math.min(audio.volume + 0.02, 0.7);
-		       if (audio.volume >= 0.7) clearInterval(fadeIn);
-		   }, 60);
-               }).catch(err => console.warn('Audio resume failed:', err));
-	   }
-
-	   
-
-	   // ANY click anywhere on the page stops the music —
-	   // but wait 1s after startup so the overlay click doesn't immediately stop it
-	   setTimeout(() => {
-               document.addEventListener('click', () => { musicPaused ? fadeInAndResume() : fadeOutAndPause() });
-	   }, 1000);
-
-	   // Escape key — toggle pause/resume (when PDF is not open)
-	   document.addEventListener('keydown', e => {
-               if (e.key === 'Escape') {
-		   musicPaused ? fadeInAndResume() : fadeOutAndPause();
-               }
-	   });
-
-
-
-	   document.addEventListener("visibilitychange", () => {
-	       if (document.visibilityState === "hidden")
-		   fadeOutAndPause();
-	       else if (document.visibilityState === "visible")
-		   fadeInAndResume()
-	   });
+	   Audio.initialise();
        }
 
 
