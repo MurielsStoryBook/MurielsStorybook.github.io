@@ -384,124 +384,169 @@
     to   { transform: translateX(-110px) scaleX(-1); }
   }
 
+
+
+#pdfBackButton {
+  background: #4a90e2;              /* brighter, modern blue */
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+#pdfBackButton:hover {
+  background: #3b7ac2;              /* slightly darker on hover */
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+#pdfBackButton:active {
+  background: #336aa8;              /* pressed state */
+  transform: scale(0.97);
+}
+
+#pdfBackButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74,144,226,0.4);
+}
 </style>
 </head>
 <body>
-<div class="scene">
+  <div id="mainScreen">
+    <div class="scene">
 
-  <!-- CLICK TO START OVERLAY -->
-  <div id="startOverlay">
-    <div class="anchor-icon">⚓</div>
-    <p style='margin-bottom: 20px'>Turn sound on</p>
-    <p>Click to set sail</p>
+      <!-- CLICK TO START OVERLAY -->
+      <div id="startOverlay">
+	<div class="anchor-icon">⚓</div>
+	<p style='margin-bottom: 20px'>Turn sound on</p>
+	<p>Click to set sail</p>
+      </div>
+
+
+      <!-- SKY -->
+      <div class="sky"></div>
+
+
+      <!-- CLOUDS -->
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+      <div class="cloud c4"></div>
+
+
+      <!-- TITLE -->
+      <div class="title">
+	<h1>Muriel&rsquo;s Storybook</h1>
+	<p>Set sail &amp; explore</p>
+      </div>
+
+
+      <!-- SEA SVG (wave + deep water) -->
+      <svg class="sea-svg" id="seaSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
+	   style="position:absolute;bottom:0;left:0;width:100%;overflow:visible;">
+	<defs>
+	  <linearGradient id="seaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#1a6fa8"/>
+            <stop offset="40%"  stop-color="#0d4f82"/>
+            <stop offset="100%" stop-color="#062d56"/>
+	  </linearGradient>
+	  <linearGradient id="waveTop" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#5bbfea" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#1a6fa8" stop-opacity="0"/>
+	  </linearGradient>
+	</defs>
+      </svg>
+
+
+      <!-- YACHT wrapper (positioned by JS) -->
+      <div class="yacht-wrap" id="yacht">
+	<!-- Wake trails -->
+	<div class="wake"></div>
+	<div class="wake wake2"></div>
+	
+	<!-- Yacht canvas — PNG with background removed via JS -->
+	<canvas id="yachtCanvas" class="yacht-svg"></canvas>
+      </div>
+
+
+      <!-- Shimmer lines (added via JS) -->
+
+      <!-- FISH — pure inline SVG, no external files, negligible file size.
+	   Each swims at a different depth, speed, size and colour.
+	   Depths are expressed as % from bottom so they sit inside the sea. -->
+
+      <!-- Fish 1: orange, medium, left-to-right, mid-depth -->
+      <svg class="fish" style="width:54px; bottom:36%; animation:fishSwimLtr 20s linear -4s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
+	<polygon points="0,4 14,14 0,24" fill="#e8801a"/>
+	<ellipse cx="30" cy="14" rx="21" ry="9" fill="#e8801a"/>
+	<ellipse cx="32" cy="17" rx="18" ry="5" fill="#f0a050" opacity="0.5"/>
+	<path d="M18 10 Q23 14 18 18M23 8 Q28 14 23 20" stroke="#c06010" stroke-width="1.2" fill="none"/>
+	<circle cx="42" cy="10" r="2.6" fill="#fff"/><circle cx="42.9" cy="10" r="1.2" fill="#222"/>
+      </svg>
+      
+      <!-- Fish 2: teal, small, left-to-right, deeper -->
+      <svg class="fish" style="width:36px; bottom:26%; animation:fishSwimLtr 27s linear -12s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
+	<polygon points="0,5 13,14 0,23" fill="#18b0c0"/>
+	<ellipse cx="30" cy="14" rx="21" ry="8" fill="#18b0c0"/>
+	<ellipse cx="32" cy="17" rx="17" ry="4" fill="#50d0e0" opacity="0.45"/>
+	<circle cx="42" cy="10" r="2.2" fill="#fff"/><circle cx="42.7" cy="10" r="1" fill="#222"/>
+      </svg>
+      
+      <!-- Fish 3: yellow, medium-small, right-to-left, upper sea -->
+      <svg class="fish" style="width:44px; bottom:42%; animation:fishSwimRtl 23s linear -7s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
+	<polygon points="0,5 13,14 0,23" fill="#e8d018"/>
+	<ellipse cx="30" cy="14" rx="21" ry="8" fill="#e8d018"/>
+	<ellipse cx="32" cy="17" rx="17" ry="4" fill="#fff080" opacity="0.45"/>
+	<circle cx="42" cy="10" r="2.2" fill="#fff"/><circle cx="42.7" cy="10" r="1" fill="#333"/>
+      </svg>
+      
+      <!-- Fish 4: pink/magenta, small, left-to-right, shallow -->
+      <svg class="fish" style="width:32px; bottom:30%; animation:fishSwimLtr 32s linear -18s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
+	<polygon points="0,5 13,14 0,23" fill="#d84090"/>
+	<ellipse cx="30" cy="14" rx="21" ry="8" fill="#d84090"/>
+	<ellipse cx="32" cy="17" rx="17" ry="4" fill="#f080c0" opacity="0.45"/>
+	<circle cx="42" cy="10" r="2" fill="#fff"/><circle cx="42.6" cy="10" r="0.9" fill="#222"/>
+      </svg>
+      
+      <!-- Fish 5: lime green, large, right-to-left, deep -->
+      <svg class="fish" style="width:64px; bottom:22%; animation:fishSwimRtl 38s linear -25s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
+	<polygon points="0,4 14,14 0,24" fill="#50c830"/>
+	<ellipse cx="30" cy="14" rx="21" ry="9" fill="#50c830"/>
+	<ellipse cx="32" cy="18" rx="18" ry="5" fill="#90e860" opacity="0.45"/>
+	<path d="M18 10 Q23 14 18 18M23 8 Q28 14 23 20" stroke="#308018" stroke-width="1.2" fill="none"/>
+	<circle cx="42" cy="10" r="2.8" fill="#fff"/><circle cx="43" cy="10" r="1.3" fill="#222"/>
+      </svg>
+      
+      <!-- Fish 6: coral/red, small, left-to-right, mid -->
+      <svg class="fish" style="width:38px; bottom:38%; animation:fishSwimLtr 25s linear -9s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
+	<polygon points="0,5 13,14 0,23" fill="#e04030"/>
+	<ellipse cx="30" cy="14" rx="21" ry="8" fill="#e04030"/>
+	<ellipse cx="32" cy="17" rx="17" ry="4" fill="#f08070" opacity="0.45"/>
+	<circle cx="42" cy="10" r="2.2" fill="#fff"/><circle cx="42.7" cy="10" r="1" fill="#222"/>
+      </svg>
+      
+      
+      <!-- THUMBNAIL SCROLL TRACK (desktop) -->
+      <div id="thumbTrack">
+	<div id="hintLeft"  class="scroll-hint">&#8249;</div>
+	<div id="hintRight" class="scroll-hint">&#8250;</div>
+	<div id="thumbScroller"></div>
+      </div>
+    </div>
   </div>
-
-
-  <!-- SKY -->
-  <div class="sky"></div>
-
-  <!-- CLOUDS -->
-  <div class="cloud c1"></div>
-  <div class="cloud c2"></div>
-  <div class="cloud c3"></div>
-  <div class="cloud c4"></div>
-
-  <!-- TITLE -->
-  <div class="title">
-    <h1>Muriel&rsquo;s Storybook</h1>
-    <p>Set sail &amp; explore</p>
+    
+    
+  <!-- PDF displayer. -->
+  <div id="pdfScreen" style="display:none; position:fixed; inset:0; background:white; z-index:9999;">
+    <div style="height:50px; background:#eee; display:flex; align-items:center; padding:0 10px; border-bottom:1px solid #ccc;">
+      <button id="pdfBackButton">← Back</button>
+    </div>
+    <iframe id="pdfFrame" style="width:100%; height:calc(100% - 50px); border:none;"></iframe>
   </div>
-
-  <!-- SEA SVG (wave + deep water) -->
-  <svg class="sea-svg" id="seaSvg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-       style="position:absolute;bottom:0;left:0;width:100%;overflow:visible;">
-    <defs>
-      <linearGradient id="seaGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color="#1a6fa8"/>
-        <stop offset="40%"  stop-color="#0d4f82"/>
-        <stop offset="100%" stop-color="#062d56"/>
-      </linearGradient>
-      <linearGradient id="waveTop" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"  stop-color="#5bbfea" stop-opacity="0.6"/>
-        <stop offset="100%" stop-color="#1a6fa8" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-  </svg>
-
-  <!-- YACHT wrapper (positioned by JS) -->
-  <div class="yacht-wrap" id="yacht">
-    <!-- Wake trails -->
-    <div class="wake"></div>
-    <div class="wake wake2"></div>
-
-    <!-- Yacht canvas — PNG with background removed via JS -->
-    <canvas id="yachtCanvas" class="yacht-svg"></canvas>
-  </div>
-
-  <!-- Shimmer lines (added via JS) -->
-
-  <!-- FISH — pure inline SVG, no external files, negligible file size.
-       Each swims at a different depth, speed, size and colour.
-       Depths are expressed as % from bottom so they sit inside the sea. -->
-
-  <!-- Fish 1: orange, medium, left-to-right, mid-depth -->
-  <svg class="fish" style="width:54px; bottom:36%; animation:fishSwimLtr 20s linear -4s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="0,4 14,14 0,24" fill="#e8801a"/>
-    <ellipse cx="30" cy="14" rx="21" ry="9" fill="#e8801a"/>
-    <ellipse cx="32" cy="17" rx="18" ry="5" fill="#f0a050" opacity="0.5"/>
-    <path d="M18 10 Q23 14 18 18M23 8 Q28 14 23 20" stroke="#c06010" stroke-width="1.2" fill="none"/>
-    <circle cx="42" cy="10" r="2.6" fill="#fff"/><circle cx="42.9" cy="10" r="1.2" fill="#222"/>
-  </svg>
-
-  <!-- Fish 2: teal, small, left-to-right, deeper -->
-  <svg class="fish" style="width:36px; bottom:26%; animation:fishSwimLtr 27s linear -12s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="0,5 13,14 0,23" fill="#18b0c0"/>
-    <ellipse cx="30" cy="14" rx="21" ry="8" fill="#18b0c0"/>
-    <ellipse cx="32" cy="17" rx="17" ry="4" fill="#50d0e0" opacity="0.45"/>
-    <circle cx="42" cy="10" r="2.2" fill="#fff"/><circle cx="42.7" cy="10" r="1" fill="#222"/>
-  </svg>
-
-  <!-- Fish 3: yellow, medium-small, right-to-left, upper sea -->
-  <svg class="fish" style="width:44px; bottom:42%; animation:fishSwimRtl 23s linear -7s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="0,5 13,14 0,23" fill="#e8d018"/>
-    <ellipse cx="30" cy="14" rx="21" ry="8" fill="#e8d018"/>
-    <ellipse cx="32" cy="17" rx="17" ry="4" fill="#fff080" opacity="0.45"/>
-    <circle cx="42" cy="10" r="2.2" fill="#fff"/><circle cx="42.7" cy="10" r="1" fill="#333"/>
-  </svg>
-
-  <!-- Fish 4: pink/magenta, small, left-to-right, shallow -->
-  <svg class="fish" style="width:32px; bottom:30%; animation:fishSwimLtr 32s linear -18s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="0,5 13,14 0,23" fill="#d84090"/>
-    <ellipse cx="30" cy="14" rx="21" ry="8" fill="#d84090"/>
-    <ellipse cx="32" cy="17" rx="17" ry="4" fill="#f080c0" opacity="0.45"/>
-    <circle cx="42" cy="10" r="2" fill="#fff"/><circle cx="42.6" cy="10" r="0.9" fill="#222"/>
-  </svg>
-
-  <!-- Fish 5: lime green, large, right-to-left, deep -->
-  <svg class="fish" style="width:64px; bottom:22%; animation:fishSwimRtl 38s linear -25s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="0,4 14,14 0,24" fill="#50c830"/>
-    <ellipse cx="30" cy="14" rx="21" ry="9" fill="#50c830"/>
-    <ellipse cx="32" cy="18" rx="18" ry="5" fill="#90e860" opacity="0.45"/>
-    <path d="M18 10 Q23 14 18 18M23 8 Q28 14 23 20" stroke="#308018" stroke-width="1.2" fill="none"/>
-    <circle cx="42" cy="10" r="2.8" fill="#fff"/><circle cx="43" cy="10" r="1.3" fill="#222"/>
-  </svg>
-
-  <!-- Fish 6: coral/red, small, left-to-right, mid -->
-  <svg class="fish" style="width:38px; bottom:38%; animation:fishSwimLtr 25s linear -9s infinite;" viewBox="0 0 54 28" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="0,5 13,14 0,23" fill="#e04030"/>
-    <ellipse cx="30" cy="14" rx="21" ry="8" fill="#e04030"/>
-    <ellipse cx="32" cy="17" rx="17" ry="4" fill="#f08070" opacity="0.45"/>
-    <circle cx="42" cy="10" r="2.2" fill="#fff"/><circle cx="42.7" cy="10" r="1" fill="#222"/>
-  </svg>
-
-
-  <!-- THUMBNAIL SCROLL TRACK (desktop) -->
-  <div id="thumbTrack">
-    <div id="hintLeft"  class="scroll-hint">&#8249;</div>
-    <div id="hintRight" class="scroll-hint">&#8250;</div>
-    <div id="thumbScroller"></div>
-  </div>
-</div>
 
 
 <script>
@@ -690,6 +735,43 @@
 
 
   /****************************************************************************/
+  function showPDF(filename)
+  {
+      // Track whether audio was playing.  (Actually, no point -- see comments elsewhere.
+      Audio.wasPlayingWhenPDFOpened = Audio.audioIsRunning();
+
+      // Pause audio
+      Audio.fadeOutAndPause();
+      
+      // Hide your main UI
+      document.getElementById("mainScreen").style.display = "none";
+
+      // Show the PDF viewer FIRST
+      const pdfScreen = document.getElementById("pdfScreen");
+      pdfScreen.style.display = "block";
+
+      // Load viewer
+      requestAnimationFrame(() => {
+	  pdfFrame.src = `pdfjs/web/viewer.html?file=${encodeURIComponent('../../' + filename)}`;
+      });
+
+
+      // Now load the viewer
+//      const viewerURL = `pdfjs/web/viewer.html?file=${encodeURIComponent('../../' + filename)}`;
+//      document.getElementById("pdfFrame").src = viewerURL;
+  }
+
+
+  document.getElementById("pdfBackButton").onclick = () => {
+      document.getElementById("pdfScreen").style.display = "none";
+      document.getElementById("mainScreen").style.display = "block";
+      document.getElementById("pdfFrame").src = ""; // unload viewer
+      if (Audio.wasPlayingWhenPDFOpened) // Actually there is no point to this.  After returning from the PDF, browsers won't play sound until there is another user-gesture.
+	  Audio.fadeInAndResume();
+  };
+
+
+  /****************************************************************************/
   // ===== BUILD THUMBNAILS =====
 
   function buildThumbnails ()
@@ -700,7 +782,7 @@
       STORIES.forEach((story, i) => {
 	  const item = document.createElement('a');
 	  item.className = 'thumb-item';
-	  item.href = story.pdf;
+	  //item.href = story.pdf;
 	  item.target = '_blank';
 	  item.rel = 'noopener';
 	  item.style.animationDelay = (i * 0.15) + 's';
@@ -713,8 +795,9 @@
             <div class="thumb-title">${story.title}</div>`;
 	  scroller.appendChild(item);
 	  item.addEventListener('click', e => {
-	      e.stopPropagation();
-	      Audio.fadeOutAndPause(false);
+//	      e.stopPropagation();
+//	      Audio.fadeOutAndPause();
+	      showPDF(`../../${story.pdf}`);
 	  });
       });
 
@@ -855,10 +938,11 @@
       initialise ()
       {
 	  this.audio = document.createElement('audio');
-	  this.musicPaused = false;
 	  this.audio.src = 'music.mp3';
 	  this.audio.loop = true;
 	  this.audio.volume = 0;
+	  this.wasPlayingWhenWindowWentHidden = false;
+	  this.wasPlayingWhenPDFOpened = false;
 
 	  let me = this;
 
@@ -878,30 +962,39 @@
 	  // ANY click anywhere on the page stops the music —
 	  // but wait 1s after startup so the overlay click doesn't immediately stop it
 	  setTimeout(() => {
-              document.addEventListener('click', () => { me.musicPaused ? me.fadeInAndResume() : me.fadeOutAndPause() });
+              document.addEventListener('click', () => { me.toggleAudio() });
 	  }, 1000);
 
 
 	  // Escape key — toggle pause/resume (when PDF is not open)
 	  document.addEventListener('keydown', e => {
-              if (e.key === 'Escape') {
-		  me.musicPaused ? me.fadeInAndResume() : me.fadeOutAndPause();
-              }
+              if (e.key === 'Escape')
+		  me.toggleAudio()
 	  });
 
 
 	  document.addEventListener("visibilitychange", () => {
 	      if (document.visibilityState === "hidden")
-		  me.fadeOutAndPause(false);
+	      {
+		  me.wasPlayingWhenWindowWentHidden = me.audioIsRunning();
+		  me.fadeOutAndPause();
+	      }
 	      else if (document.visibilityState === "visible")
 	      {
-		  if (!me.musicPaused)
-		      me.fadeInAndResume(true)
+		  if (me.wasPlayingWhenWindowWentHidden)
+		      me.fadeInAndResume();
 	      }
 	  });
       }
       
 
+      /************************************************************************/
+      audioIsRunning ()
+      {
+	  return !this.audio.paused && !this.audio.ended && this.audio.currentTime > 0
+      }
+
+      
       /************************************************************************/
       fadeAudioIn ()
       {
@@ -916,30 +1009,39 @@
 
 	
       /************************************************************************/
-      fadeOutAndPause (updatePausedValue = true)
+      fadeOutAndPause ()
       {
 	  let me = this;
-          if (me.musicPaused || me.audio.paused) return;
+          if (!this.audioIsRunning()) return;
           const fadeOut = setInterval(() => {
 	      me.audio.volume = Math.max(0, me.audio.volume - 0.04);
-	      if (me.audio.volume <= 0) { clearInterval(fadeOut); me.audio.pause(); if (updatePausedValue) me.musicPaused = true; }
+	      if (me.audio.volume <= 0) { clearInterval(fadeOut); me.audio.pause(); }
           }, 40);
       }
 
 	   
       /************************************************************************/
-      fadeInAndResume (force = false)
+      fadeInAndResume ()
       {
 	  let me = this;
-          if (!me.musicPaused && !force) return;
+          if (this.audioIsRunning()) return;
           me.audio.volume = 0;
           me.audio.play().then(() => {
-	      me.musicPaused = false;
 	      const fadeIn = setInterval(() => {
 		  me.audio.volume = Math.min(me.audio.volume + 0.02, 0.7);
 		  if (me.audio.volume >= 0.7) clearInterval(fadeIn);
 	      }, 60);
           }).catch(err => console.warn('Audio resume failed:', err));
+      }
+
+
+      /************************************************************************/
+      toggleAudio ()
+      {
+	  if (this.audioIsRunning())
+	      this.fadeOutAndPause();
+	  else
+	      this.fadeInAndResume();
       }
   }
 
