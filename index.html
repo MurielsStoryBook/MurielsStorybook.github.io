@@ -795,8 +795,8 @@
             <div class="thumb-title">${story.title}</div>`;
 	  scroller.appendChild(item);
 	  item.addEventListener('click', e => {
-//	      e.stopPropagation();
 //	      Audio.fadeOutAndPause();
+	      e.stopPropagation();
 	      showPDF(`../../${story.pdf}`);
 	  });
       });
