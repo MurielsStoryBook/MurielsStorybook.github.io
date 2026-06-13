@@ -343,23 +343,36 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 44px; height: 44px;
-    background: rgba(255,255,255,0.18);
-    border: 1.5px solid rgba(255,255,255,0.4);
+    width: 64px; height: 64px;
+    background: rgba(10, 60, 120, 0.72);
+    border: 2.5px solid rgba(255,255,255,0.85);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
-    color: white;
     cursor: pointer;
     pointer-events: auto;
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s, background 0.2s, transform 0.2s;
     z-index: 20;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.45);
   }
   .scroll-hint.show { opacity: 1; }
-  #hintLeft  { left:  10px; }
-  #hintRight { right: 10px; }
+  .scroll-hint:hover {
+    background: rgba(10, 80, 160, 0.92);
+    transform: translateY(-50%) scale(1.1);
+  }
+  /* SVG chevron arrows */
+  .scroll-hint svg {
+    width: 28px; height: 28px;
+    stroke: white;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+  }
+  #hintLeft  { left:  12px; }
+  #hintRight { right: 12px; }
 
   /* ===== RESPONSIVE: thumb track always visible, touch-scrollable on mobile ===== */
   @media (max-width: 640px) {
@@ -532,8 +545,8 @@
       
       <!-- THUMBNAIL SCROLL TRACK (desktop) -->
       <div id="thumbTrack">
-	<div id="hintLeft"  class="scroll-hint">&#8249;</div>
-	<div id="hintRight" class="scroll-hint">&#8250;</div>
+	<div id="hintLeft"  class="scroll-hint"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+	<div id="hintRight" class="scroll-hint"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
 	<div id="thumbScroller"></div>
       </div>
     </div>
