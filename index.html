@@ -750,7 +750,7 @@
   /****************************************************************************/
   function showPDF(filename)
   {
-      // Track whether audio was playing.  (Actually, no point -- see comments elsewhere.
+      // Track whether audio was playing.  (Actually, no point -- see comments elsewhere.)
       Audio.wasPlayingWhenPDFOpened = Audio.audioIsRunning();
 
       // Pause audio
@@ -764,14 +764,8 @@
       pdfScreen.style.display = "block";
 
       // Load viewer
-      requestAnimationFrame(() => {
-	  pdfFrame.src = `pdfjs/web/viewer.html?file=${encodeURIComponent('../../' + filename)}`;
-      });
-
-
-      // Now load the viewer
-//      const viewerURL = `pdfjs/web/viewer.html?file=${encodeURIComponent('../../' + filename)}`;
-//      document.getElementById("pdfFrame").src = viewerURL;
+      const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+      pdfFrame.src = `pdfjs/web/viewer.html?file=${encodeURIComponent(base + filename)}`;
   }
 
 
@@ -810,7 +804,7 @@
 	  item.addEventListener('click', e => {
 //	      Audio.fadeOutAndPause();
 	      e.stopPropagation();
-	      showPDF(`../../${story.pdf}`);
+	      showPDF(story.pdf);
 	  });
       });
 
